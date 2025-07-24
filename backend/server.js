@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoute.js';
+import sessionRoutes from './routes/sessionRoute.js';
 
 dotenv.config(); // Load environment variables
 
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.use('/api/auth', authRoutes);
+app.use('/api/sessions', sessionRoutes);
 
 app.listen(PORT, () => {
   console.log('Server is running on port 3000');

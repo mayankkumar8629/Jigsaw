@@ -28,7 +28,7 @@ const sessionSchema = new Schema({
             },
             response:{
                 type:String,
-                required:true
+                default:''
             },
             timestamp:{
                 type:Date,
