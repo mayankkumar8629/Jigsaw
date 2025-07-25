@@ -2,7 +2,11 @@ import Session from "../models/session.model.js";
 import User from "../models/user.model.js";
 import dotenv from 'dotenv';
 dotenv.config({path:'../.env'});
+import { callOpenRouterAPI,callOpenRouter } from "../service/openRouterService.js";
+import { generateTitle,extractCode } from "../utils/sessionUtil.js";
 
+
+//creating new session
 export const createNewSession = async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -62,109 +66,8 @@ export const createNewSession = async (req, res) => {
   }
 };
 
-//calling the api 
-const callOpenRouterAPI = async (prompt) => {
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "HTTP-Referer": process.env.SITE_URL || "www.github.com",
-      "X-Title": process.env.APP_NAME || "Component Generator",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: "deepseek/deepseek-chat-v3-0324:free",
-      messages: [
-        {
-          role: "system",
-          content: "You are a React component generator. Return code in ```jsx``` blocks."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.7
-    })
-  });
+//refininng the component
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(`AI API Error: ${errorData.error?.message || response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data.choices[0].message.content;
-};
-//calling the api for refining the component
-const callOpenRouter = async (messages) => {
-  try {
-    // Validate messages array
-    if (!Array.isArray(messages) || messages.length === 0) {
-      throw new Error('Messages array must contain at least one message');
-    }
-
-    const payload = {
-      model: "deepseek/deepseek-chat-v3-0324:free",
-      messages: messages.map(msg => ({
-        role: msg.role,
-        content: msg.content || "" // Ensure content exists
-      })),
-      temperature: 0.7
-    };
-
-    console.log("Sending payload:", JSON.stringify(payload, null, 2)); // Debug log
-
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "HTTP-Referer": process.env.SITE_URL || "www.github.com",
-        "X-Title": process.env.APP_NAME || "Component Generator",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenRouter Error:', errorData);
-      throw new Error(`AI API Error: ${errorData.error?.message || response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
-  } catch (error) {
-    console.error('API Call Failed:', error);
-    throw error;
-  }
-};
-//genearte title from the prompt
-const generateTitle = (prompt) => {
-  return prompt.split(' ').slice(0, 3).join(' ') + (prompt.split(' ').length > 3 ? '...' : '');
-};
-
-//extract code from the response
- 
-export const extractCode = (gptResponse) => {
-  // 1. Handle empty responses
-  if (!gptResponse) return '';
-
-  // 2. Extract the last code block (most likely the actual code)
-  const codeBlocks = gptResponse.match(/```(?:[a-z]*\n)?([\s\S]+?)```/gi);
-  if (codeBlocks) {
-    const lastBlock = codeBlocks[codeBlocks.length - 1];
-    return lastBlock.replace(/```.*\n?|\```/g, '').trim();
-  }
-
-  // 3. Fallback: Extract content between markers (e.g., /////)
-  const markerMatch = gptResponse.match(/(\/{5,}|={5,})([\s\S]+?)(\/{5,}|={5,})/);
-  if (markerMatch) return markerMatch[2].trim();
-
-  // 4. Ultimate fallback: Return everything (assume it's pure code)
-  return gptResponse.trim();
-};
-///refifing the component
 export const refineComponent = async (req, res) => {
   try {
     const { prompt } = req.body;
