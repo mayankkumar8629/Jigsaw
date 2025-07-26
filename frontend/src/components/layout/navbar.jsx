@@ -1,7 +1,12 @@
 import { Link } from 'react-router-dom';
 import AuthButtons from '../ui/AuthButton.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
+import LogoutButton from '../ui/LogoutButton.jsx';
+
 
 export default function Navbar({ onAuthButtonClick }) {
+  const { isAuthenticated } = useAuth();
+
   return (
     <nav className="w-full px-6 py-5 absolute top-0 left-0 z-20">
       <div className="flex justify-between items-center max-w-7xl mx-auto">
@@ -25,7 +30,14 @@ export default function Navbar({ onAuthButtonClick }) {
         >
           Jigsaw
         </Link>
-        <AuthButtons onButtonClick={onAuthButtonClick} />
+        
+        {isAuthenticated ? (
+          <div className="flex items-center gap-4">
+            <LogoutButton />
+          </div>
+        ) : (
+          <AuthButtons onButtonClick={onAuthButtonClick} />
+        )}
       </div>
     </nav>
   );

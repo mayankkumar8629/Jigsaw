@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import AuthModal from './components/auth/authModel.jsx';
 import Navbar from './components/layout/navbar.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
+
 
 
 function App() {
@@ -14,31 +16,32 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* Navbar with auth handler */}
-      <Navbar 
-        onAuthButtonClick={(mode) => {
-          setAuthMode(mode);
-          setAuthModalOpen(true);
-        }} 
-      />
-      
-      {/* Auth Modal */}
-      {authModalOpen && (
-        <AuthModal 
-          mode={authMode}
-          onClose={() => setAuthModalOpen(false)} 
+      {/* Wrap everything with AuthProvider */}
+      <AuthProvider>
+        {/* Navbar with auth handler - unchanged */}
+        <Navbar 
+          onAuthButtonClick={(mode) => {
+            setAuthMode(mode);
+            setAuthModalOpen(true);
+          }} 
         />
-      )}
+        
+        {/* Auth Modal - unchanged */}
+        {authModalOpen && (
+          <AuthModal 
+            mode={authMode}
+            onClose={() => setAuthModalOpen(false)} 
+          />
+        )}
 
-      {/* Routes */}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        {/* Add other routes here */}
-      </Routes>
+        {/* Routes - unchanged */}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          {/* Add other routes here */}
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
 
-
-
-export default App
+export default App;

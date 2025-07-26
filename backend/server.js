@@ -14,7 +14,11 @@ const app=express();
 const PORT = 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // Your frontend URL
+  credentials: true // Required for cookies
+}));
+
 
 
 app.use('/api/auth', authRoutes);

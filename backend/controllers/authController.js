@@ -111,7 +111,7 @@ export const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
-  
+    console.log('Login successful');
     res.json({ accessToken });
 
   } catch (error) {
@@ -170,7 +170,8 @@ export const logout = async (req, res) => {
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: false, // Changed for development
-      sameSite: 'lax' // Changed for development
+      sameSite: 'lax',
+      path: '/' // Changed for development
     });
 
     res.sendStatus(204);
