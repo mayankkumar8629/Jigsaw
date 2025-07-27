@@ -5,7 +5,7 @@ import { FiPlus } from 'react-icons/fi';
 
 
 
-export default function Sidebar() {
+export default function Sidebar({ onNewChat }) {
       
   return (
     <div className="w-64 h-full bg-[#0a0a2a]/90 border-r border-[#3a3a5a] p-4 flex flex-col">
@@ -35,12 +35,15 @@ export default function Sidebar() {
         </Link>
 
         {/* New Chat Button with icon */}
-        <button className="
-          flex items-center justify-center gap-2
-          w-full bg-blue-600 hover:bg-blue-700 
-          text-white py-1.5 px-4 rounded-lg 
-          transition-colors text-sm
-        ">
+        <button 
+          className="
+            flex items-center justify-center gap-2
+            w-full bg-blue-600 hover:bg-blue-700 
+            text-white py-1.5 px-4 rounded-lg 
+            transition-colors text-sm
+          "
+          onClick={onNewChat}
+        >
           <FiPlus size={16} />
           New Chat
         </button>
