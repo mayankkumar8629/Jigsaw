@@ -14,7 +14,6 @@ import { useNavigate } from 'react-router-dom';
 
 import ChatWindow from "../components/dashboard/ChatWindow.jsx";
 
-
 export default function Dashboard() {
   const { isAuthenticated, logout, isLoggingOut } = useAuth();
   const navigate = useNavigate();
@@ -25,11 +24,11 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleNewChat = () => {
-  setSessionId(null);
-  setMessages([]);
-  setIsLoading(false);
-  console.log('Started new chat - sessionId reset');
-};
+    setSessionId(null);
+    setMessages([]);
+    setIsLoading(false);
+    console.log('Started new chat - sessionId reset');
+  };
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -190,8 +189,6 @@ export default function Dashboard() {
     }
   };
 
-
-
   // Show loading screen while checking authentication
   if (!isAuthenticated && isLoggingOut) {
     return (
@@ -230,27 +227,29 @@ export default function Dashboard() {
       )}
 
       {/* Main Dashboard */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden min-w-0">
                 
-        {/* Left Content Area */}
-        <div className="flex-1 flex flex-col justify-between p-6 overflow-hidden">
+        {/* Left Content Area - Chat Panel */}
+        <div className="flex-1 flex flex-col justify-between p-6 overflow-hidden min-w-0 max-w-none">
                     
           {/* Debug Info - Remove in production */}
-          <div className="text-xs text-gray-400 mb-2">
+          <div className="text-xs text-gray-400 mb-2 flex-shrink-0">
             Session ID: {sessionId || 'None'} | Loading: {isLoading ? 'Yes' : 'No'} | Auth: {isAuthenticated ? 'Yes' : 'No'}
           </div>
 
-          {/* ChatWindow (message view) */}
-          <ChatWindow messages={messages} isLoading={isLoading} />
+          {/* ChatWindow (message view) - This will handle the overflow internally */}
+          <div className="flex-1 overflow-hidden min-w-0">
+            <ChatWindow messages={messages} isLoading={isLoading} />
+          </div>
 
           {/* ChatBox (input) */}
-          <div className="h-24 p-2">
+          <div className="h-24 p-2 flex-shrink-0">
             <ChatBox onSendMessage={handleSendMessage} isLoading={isLoading} />
           </div>
         </div>
 
         {/* Right Panel for Sandbox */}
-        <div className="w-[35%] h-full p-2 pr-4">
+        <div className="w-[35%] h-full p-2 pr-4 flex-shrink-0">
           <div className="h-[80%] w-full">
             <Sandbox />
           </div>
