@@ -7,40 +7,44 @@ import Home from './pages/Home';
 import AuthModal from './components/auth/authModel.jsx';
 import Navbar from './components/layout/navbar.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
-
+import Dashboard from './pages/Dashboard.jsx';
 
 
 function App() {
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
-
   return (
     <BrowserRouter>
-      {/* Wrap everything with AuthProvider */}
       <AuthProvider>
-        {/* Navbar with auth handler - unchanged */}
-        <Navbar 
-          onAuthButtonClick={(mode) => {
-            setAuthMode(mode);
-            setAuthModalOpen(true);
-          }} 
-        />
-        
-        {/* Auth Modal - unchanged */}
-        {authModalOpen && (
-          <AuthModal 
-            mode={authMode}
-            onClose={() => setAuthModalOpen(false)} 
-          />
-        )}
-
-        {/* Routes - unchanged */}
         <Routes>
-          <Route path="/" element={<Home />} />
-          {/* Add other routes here */}
+          <Route path="/" element={<HomeWithAuthModal />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
+  );
+}
+
+function HomeWithAuthModal() {
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
+
+  return (
+    <div className="relative"> {/* Added container for proper z-index context */}
+      <Navbar 
+        onAuthButtonClick={(mode) => {
+          setAuthMode(mode);
+          setAuthModalOpen(true);
+        }} 
+      />
+      <Home />
+      
+      {/* AuthModal now properly nested in DOM */}
+      {authModalOpen && (
+        <AuthModal 
+          mode={authMode}
+          onClose={() => setAuthModalOpen(false)} 
+        />
+      )}
+    </div>
   );
 }
 

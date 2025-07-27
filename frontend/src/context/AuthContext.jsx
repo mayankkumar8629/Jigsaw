@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { login,logout,refreshAccessToken } from '../services/authService.js';
+import { useNavigate } from 'react-router-dom';
 
 
 const AuthContext = createContext();
@@ -26,6 +27,7 @@ export const AuthProvider = ({ children }) => {
       // Clear all auth cookies
       document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

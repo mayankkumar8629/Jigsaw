@@ -3,7 +3,6 @@ import AuthButtons from '../ui/AuthButton.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import LogoutButton from '../ui/LogoutButton.jsx';
 
-
 export default function Navbar({ onAuthButtonClick }) {
   const { isAuthenticated } = useAuth();
 
@@ -31,13 +30,30 @@ export default function Navbar({ onAuthButtonClick }) {
           Jigsaw
         </Link>
         
-        {isAuthenticated ? (
-          <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
+          {/* Dashboard Link - Only shown when authenticated */}
+          {isAuthenticated && (
+            <Link
+              to="/dashboard"
+              className="
+                text-white
+                font-medium
+                hover:text-blue-400
+                transition-colors
+                duration-200
+              "
+            >
+              Dashboard
+            </Link>
+          )}
+
+          {/* Auth Buttons/Logout */}
+          {isAuthenticated ? (
             <LogoutButton />
-          </div>
-        ) : (
-          <AuthButtons onButtonClick={onAuthButtonClick} />
-        )}
+          ) : (
+            <AuthButtons onButtonClick={onAuthButtonClick} />
+          )}
+        </div>
       </div>
     </nav>
   );

@@ -1,30 +1,74 @@
-import ChatBox from "../components/dashboard/ChatBox";
+import ChatBox from "../components/dashboard/ChatBox.jsx";
+import Sidebar from "../components/dashboard/SideBar";
+import Sandbox from "../components/dashboard/Sandbox.jsx";
+
+
+
+import { useState } from 'react';
+
+
+import { FiMenu, FiX, FiCode, FiEye } from 'react-icons/fi';
+
+
+import ChatWindow from "../components/dashboard/ChatWindow.jsx";
+
 
 export default function Dashboard() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   const handleSendMessage = (message) => {
-    console.log('Sending:', message); // Replace with API call
+    console.log('Sending:', message);
   };
 
   return (
-    <div className="relative h-screen overflow-hidden">
-      {/* Gradient Background */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#0a0a2a] to-[#000000]" />
+    <div className="flex h-screen bg-gradient-to-b from-[#0a0a2a] to-[#000000] relative text-white overflow-hidden">
+      
+      {/* Sidebar Toggle Button */}
+      <button
+        onClick={toggleSidebar}
+        className={`fixed top-4 z-50 w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
+          isSidebarOpen ? 'left-72' : 'left-4'
+        }`}
+      >
+        {isSidebarOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+      </button>
 
-      {/* Main Content */}
-      <main className="relative z-10 h-full flex flex-col">
-        {/* Top: Code/Sandbox Area (Placeholder) */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-4xl mx-auto bg-[#0a0a2a]/50 rounded-xl p-6 border border-[#3a3a5a]">
-            <h1 className="text-2xl font-bold mb-4">Generated Code</h1>
-            <pre className="bg-black/30 p-4 rounded-lg">
-              {/* Code will render here */}
-            </pre>
+      {/* Sidebar */}
+      {isSidebarOpen && (
+        <div className="fixed inset-0 z-40">
+          <div className="absolute inset-0 bg-black/50" onClick={toggleSidebar} />
+          <div className="w-64 h-full relative z-10">
+            <Sidebar />
+          </div>
+        </div>
+      )}
+
+      {/* Main Dashboard */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* Left Content Area */}
+        <div className="flex-1 flex flex-col justify-between p-6 overflow-hidden">
+          
+          {/* ChatWindow (message view) */}
+          <ChatWindow />
+
+          {/* ChatBox (input) */}
+          <div className="h-24 p-2 ">
+            <ChatBox onSendMessage={handleSendMessage} />
           </div>
         </div>
 
-        {/* Bottom: Chat Box */}
-        <ChatBox onSendMessage={handleSendMessage} />
-      </main>
+        {/* Right Panel for Sandbox */}
+        <div className="w-[35%] h-full p-2 pr-4">
+          <div className="h-[80%] w-full">
+            <Sandbox />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

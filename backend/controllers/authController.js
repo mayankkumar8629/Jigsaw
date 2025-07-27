@@ -154,6 +154,7 @@ export const refreshToken = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
+  console.log('Logout request received');
   const refreshToken = req.cookies.refreshToken;
 
   if (!refreshToken) {
