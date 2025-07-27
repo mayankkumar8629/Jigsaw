@@ -12,9 +12,9 @@ import { FiMenu, FiX, FiCode, FiEye } from 'react-icons/fi';
 
 import ChatWindow from "../components/dashboard/ChatWindow.jsx";
 
-
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [messages, setMessages] = useState([]); // Add messages state
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -22,11 +22,33 @@ export default function Dashboard() {
 
   const handleSendMessage = (message) => {
     console.log('Sending:', message);
+    
+    // Add user message to messages array
+    const userMessage = {
+      id: Date.now(),
+      sender: 'user',
+      text: message,
+      timestamp: new Date()
+    };
+    
+    setMessages(prevMessages => [...prevMessages, userMessage]);
+    
+    // Simulate bot response after a delay
+    setTimeout(() => {
+      const botMessage = {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: `I received your message: "${message}". This is a simulated response. I'll help you generate the component you need!`,
+        timestamp: new Date()
+      };
+      
+      setMessages(prevMessages => [...prevMessages, botMessage]);
+    }, 1000);
   };
 
   return (
     <div className="flex h-screen bg-gradient-to-b from-[#0a0a2a] to-[#000000] relative text-white overflow-hidden">
-      
+             
       {/* Sidebar Toggle Button */}
       <button
         onClick={toggleSidebar}
@@ -49,15 +71,15 @@ export default function Dashboard() {
 
       {/* Main Dashboard */}
       <div className="flex flex-1 overflow-hidden">
-        
+                
         {/* Left Content Area */}
         <div className="flex-1 flex flex-col justify-between p-6 overflow-hidden">
-          
-          {/* ChatWindow (message view) */}
-          <ChatWindow />
+                    
+          {/* ChatWindow (message view) - Pass messages as prop */}
+          <ChatWindow messages={messages} />
 
           {/* ChatBox (input) */}
-          <div className="h-24 p-2 ">
+          <div className="h-24 p-2">
             <ChatBox onSendMessage={handleSendMessage} />
           </div>
         </div>
