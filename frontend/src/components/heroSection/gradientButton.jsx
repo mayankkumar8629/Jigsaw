@@ -1,6 +1,15 @@
+import { useNavigate } from 'react-router-dom';
+
 export default function GradientButton() {
+  const navigate=useNavigate();
+  
+  const handleClick=()=>{
+    navigate('/dashboard');
+  }
   return (
-    <button className="
+    <button
+    onClick={handleClick}
+     className="
       px-6 py-3 
       text-base 
       font-semibold 

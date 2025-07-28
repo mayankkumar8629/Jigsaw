@@ -170,30 +170,76 @@ export const refineComponent = async (req, res) => {
   }
 };
 
-export const getAllSessions  = async(req,res)=>{
-  try{
-    console.log('req comming');
-    const userId=req.user.userId;
-    const user= await User.findById(userId);
-    if(!user){
+export const getAllSessions = async (req, res) => {
+  try {
+    console.log('req coming');
+    const userId = req.user.userId;
+    const user = await User.findById(userId);
+    
+    if (!user) {
       return res.status(404).json({
-        message:"User does not exists"
-      })
-    };
-    const sessions = await Session.find({userId}).sort({createdAt: -1}).lean();
-    if(!sessions || sessions.length === 0){
-      return res.status(404).json({
-        message:"No sessions found"
-      })
+        message: "User does not exist"
+      });
     }
+
+    // Only select necessary fields for the sidebar (title, createdAt, _id)
+    const sessions = await Session.find({ userId })
+      .select('title createdAt _id')  // Only get what we need for the sidebar
+      .sort({ createdAt: -1 })
+      .lean();
+
+    if (!sessions || sessions.length === 0) {
+      return res.status(404).json({
+        message: "No sessions found"
+      });
+    }
+
     return res.status(200).json({
-      message:"Sessions fetched successfully",
+      message: "Sessions fetched successfully",
       sessions
     });
-  }catch(error){
+
+  } catch (error) {
     console.error('Error fetching sessions:', error);
     return res.status(500).json({
-      message:"Internal server error"
+      message: "Internal server error"
     });
   }
-}
+};
+
+export const getSessionById = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const userId = req.user.userId;
+
+    // Validate sessionId format (MongoDB ObjectId)
+    if (!sessionId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        message: "Invalid session ID format"
+      });
+    }
+
+    // Find the session and verify it belongs to the user
+    const session = await Session.findOne({ 
+      _id: sessionId, 
+      userId: userId 
+    }).lean();
+
+    if (!session) {
+      return res.status(404).json({
+        message: "Session not found"
+      });
+    }
+
+    return res.status(200).json({
+      message: "Session fetched successfully",
+      session
+    });
+
+  } catch (error) {
+    console.error('Error fetching session by ID:', error);
+    return res.status(500).json({
+      message: "Internal server error"
+    });
+  }
+};

@@ -7,7 +7,7 @@ import {
 } from "@codesandbox/sandpack-react";
 
 const Sandbox = ({ generatedCode }) => {
-  const [viewMode, setViewMode] = useState("split"); // 'editor', 'preview', or 'split'
+  const [viewMode, setViewMode] = useState("preview"); // 'editor' or 'preview'
   const [key, setKey] = useState(0); // Force re-render of Sandpack
   const previousCodeRef = useRef(null);
 
@@ -36,13 +36,9 @@ const Sandbox = ({ generatedCode }) => {
       // Force Sandpack to re-render with new code
       setKey(prev => prev + 1);
       
-      // Auto-switch behavior based on current view mode
+      // Auto-switch to preview when new code is generated
       if (viewMode === "editor") {
-        // If in editor mode, switch to preview to show the result
         setViewMode("preview");
-      } else if (viewMode === "preview" || viewMode === "split") {
-        // If already in preview or split, the key change will force refresh
-        // No need to change view mode
       }
     }
   }, [generatedCode, viewMode]);
@@ -101,7 +97,7 @@ body {
             }`}
             onClick={() => setViewMode("editor")}
           >
-            Editor
+            Code
           </button>
           <button
             className={`px-4 py-1 rounded transition-colors ${
@@ -112,16 +108,6 @@ body {
             onClick={() => setViewMode("preview")}
           >
             Preview
-          </button>
-          <button
-            className={`px-4 py-1 rounded transition-colors ${
-              viewMode === "split" 
-                ? "bg-blue-600 text-white" 
-                : "bg-gray-600 text-gray-300 hover:bg-gray-500"
-            }`}
-            onClick={() => setViewMode("split")}
-          >
-            Split View
           </button>
         </div>
       </div>
@@ -156,26 +142,12 @@ body {
               showInlineErrors
               style={{ height: "100%" }}
             />
-          ) : viewMode === "preview" ? (
+          ) : (
             <SandpackPreview 
               style={{ height: "100%" }}
               showOpenInCodeSandbox={false}
               showRefreshButton={true}
             />
-          ) : (
-            <>
-              <SandpackCodeEditor
-                showTabs
-                showLineNumbers
-                showInlineErrors
-                style={{ height: "100%", width: "50%" }}
-              />
-              <SandpackPreview 
-                style={{ height: "100%", width: "50%" }}
-                showOpenInCodeSandbox={false}
-                showRefreshButton={true}
-              />
-            </>
           )}
         </SandpackLayout>
       </SandpackProvider>

@@ -11,11 +11,11 @@ dotenv.config(); // Load environment variables
 connectDB(); // Connect to MongoDB
 
 const app=express();
-const PORT = 3000;
+const PORT = 3003;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-  origin: 'http://localhost:5173', // Your frontend URL
+  origin: 'https://jigsaw-mayank-kumars-projects-912dc5d1.vercel.app/', // Your frontend URL
   credentials: true // Required for cookies
 }));
 
@@ -24,6 +24,6 @@ app.use(cors({
 app.use('/api/auth', authRoutes);
 app.use('/api/sessions', sessionRoutes);
 
-app.listen(PORT, () => {
-  console.log('Server is running on port 3000');
+app.listen(PORT, '0.0.0.0', () => {
+  console.log('Server is running on port 3003');
 });

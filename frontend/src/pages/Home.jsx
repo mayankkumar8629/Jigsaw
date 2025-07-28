@@ -6,7 +6,7 @@ import HeroSection from '../components/heroSection/HeroSection.jsx';
 export default function Home() {
   return (
     <div className="min-h-screen relative">
-      {/* Gradient Background */}
+    
       <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#0a0a2a] to-[#000000]" />
       
       <div className="relative z-10">

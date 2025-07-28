@@ -2,7 +2,7 @@ import ChatBox from "../components/dashboard/ChatBox.jsx";
 import Sidebar from "../components/dashboard/SideBar";
 import Sandbox from "../components/dashboard/Sandbox.jsx";
 
-
+ 
 
 import { useState ,useEffect} from 'react';
 import { useAuth } from "../context/AuthContext.jsx";
@@ -19,45 +19,28 @@ import ChatWindow from "../components/dashboard/ChatWindow.jsx";
 export default function Dashboard() {
   const { isAuthenticated, logout, isLoggingOut } = useAuth();
   const navigate = useNavigate();
-  
+   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [sessionId, setSessionId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  // NEW: State to store current generated code for sandbox
   const [currentCode, setCurrentCode] = useState(null);
-
-  const handleNewChat = () => {
-    setSessionId(null);
-    setMessages([]);
-    setIsLoading(false);
-    // Clear sandbox code when starting new chat
-    setCurrentCode(null);
-    console.log('Started new chat - sessionId reset');
-  };
-
-  // NEW: Callback function to receive code from ChatWindow
-  const handleCodeUpdate = (code) => {
-    console.log('Received code for sandbox:', code);
-    setCurrentCode(code);
-  };
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated && !isLoggingOut) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, isLoggingOut, navigate]);
+  
+  // NEW: Session history states
+  const [userSessions, setUserSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
+  const [loadingSession, setLoadingSession] = useState(false);
 
   // API base URL configuration
-  const API_BASE_URL = 'http://localhost:3000';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ; 
+  
 
-  // Get token from localStorage (matches your AuthContext)
+
   const getAuthToken = () => {
     return localStorage.getItem('accessToken');
   };
 
-  // Handle API errors (401/403 = token expired)
+  // Handle API errors
   const handleAPIError = (response) => {
     if (response.status === 401 || response.status === 403) {
       console.log('Token expired, logging out...');
@@ -67,11 +50,165 @@ export default function Dashboard() {
     throw new Error(`API Error: ${response.status}`);
   };
 
+  // NEW: Fetch all user sessions
+  const fetchUserSessions = async () => {
+    const token = getAuthToken();
+    if (!token) {
+      logout();
+      return;
+    }
+
+    setLoadingSessions(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/sessions/allSessions`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          
+          setUserSessions([]);
+          return;
+        }
+        handleAPIError(response);
+      }
+
+      const data = await response.json();
+      if (data.sessions) {
+        setUserSessions(data.sessions);
+      }
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+      setUserSessions([]);
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
+  // Fetch specific session with history
+  const fetchSessionById = async (sessionId) => {
+    const token = getAuthToken();
+    if (!token) {
+      logout();
+      return;
+    }
+
+    setLoadingSession(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        handleAPIError(response);
+      }
+
+      const data = await response.json();
+      return data.session;
+    } catch (error) {
+      console.error('Error fetching session:', error);
+      return null;
+    } finally {
+      setLoadingSession(false);
+    }
+  };
+
+  // NEW: Transform MongoDB history to message format
+  const transformHistoryToMessages = (history) => {
+    const messages = [];
+    
+    history.forEach((item, index) => {
+      // Add user message
+      messages.push({
+        id: `user-${index}-${Date.now()}`,
+        sender: 'user',
+        text: item.prompt,
+        timestamp: new Date(item.timestamp)
+      });
+
+      // Add bot message
+      messages.push({
+        id: `bot-${index}-${Date.now()}`,
+        sender: 'bot',
+        text: item.response,
+        code: item.code || null,
+        timestamp: new Date(item.timestamp)
+      });
+    });
+
+    return messages;
+  };
+
+  //Handle session selection from sidebar
+  const handleSessionSelect = async (selectedSessionId) => {
+    if (selectedSessionId === sessionId) {
+      return; 
+    }
+
+    console.log('Loading session:', selectedSessionId);
+    const sessionData = await fetchSessionById(selectedSessionId);
+    
+    if (sessionData) {
+     
+      const transformedMessages = transformHistoryToMessages(sessionData.history || []);
+      
+      // Update state
+      setSessionId(selectedSessionId);
+      setMessages(transformedMessages);
+      
+      // Update sandbox with last generated code
+      const lastCodeMessage = transformedMessages
+        .reverse()
+        .find(msg => msg.sender === 'bot' && msg.code);
+      
+      if (lastCodeMessage) {
+        setCurrentCode(lastCodeMessage.code);
+      } else {
+        setCurrentCode(null);
+      }
+
+      console.log(`Loaded session ${selectedSessionId} with ${transformedMessages.length} messages`);
+    }
+  };
+
+  const handleNewChat = () => {
+    setSessionId(null);
+    setMessages([]);
+    setIsLoading(false);
+    setCurrentCode(null);
+    console.log('Started new chat - sessionId reset');
+  };
+
+  const handleCodeUpdate = (code) => {
+    console.log('Received code for sandbox:', code);
+    setCurrentCode(code);
+  };
+
+  // Fetch user sessions on component mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUserSessions();
+    }
+  }, [isAuthenticated]);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated && !isLoggingOut) {
+      navigate('/');
+    }
+  }, [isAuthenticated, isLoggingOut, navigate]);
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // API call for new session with proper error handling
+  // API call for new session
   const callNewSessionAPI = async (prompt) => {
     const token = getAuthToken();
     if (!token) {
@@ -95,7 +232,7 @@ export default function Dashboard() {
     return await response.json();
   };
 
-  // API call for refining component with proper error handling
+  // API call for refining component
   const callRefineComponentAPI = async (sessionId, prompt) => {
     const token = getAuthToken();
     if (!token) {
@@ -144,7 +281,6 @@ export default function Dashboard() {
 
   // Main message handler with API integration
   const handleSendMessage = async (message) => {
-    // Check if user is still authenticated
     if (!isAuthenticated) {
       navigate('/');
       return;
@@ -152,7 +288,6 @@ export default function Dashboard() {
 
     console.log('Sending:', message);
     
-    // Add user message immediately
     addUserMessage(message);
     setIsLoading(true);
 
@@ -163,22 +298,22 @@ export default function Dashboard() {
         const apiResponse = await callNewSessionAPI(message);
         
         if (apiResponse && apiResponse.success) {
-          // Store session ID for future calls
           setSessionId(apiResponse.data.sessionId);
           console.log('Session ID stored:', apiResponse.data.sessionId);
           
-          // Add bot response
           addBotMessage(apiResponse.data.response, apiResponse.data.code);
+          
+          // Refresh sessions list to include the new session
+          fetchUserSessions();
         } else if (apiResponse) {
           throw new Error(apiResponse.error || 'Failed to create session');
         }
       } else {
-        // Subsequent messages - call refineComponent API
+        
         console.log('Calling refineComponent API with sessionId:', sessionId);
         const apiResponse = await callRefineComponentAPI(sessionId, message);
         
         if (apiResponse && apiResponse.success) {
-          // Add bot response
           addBotMessage(apiResponse.data.response || 'Component updated successfully!', apiResponse.data.code);
         } else if (apiResponse) {
           throw new Error(apiResponse.error || 'Failed to refine component');
@@ -187,7 +322,6 @@ export default function Dashboard() {
     } catch (error) {
       console.error('API Error:', error);
       
-      // Add error message to chat
       const errorMessage = {
         id: Date.now() + 2,
         sender: 'bot',
@@ -210,7 +344,6 @@ export default function Dashboard() {
     );
   }
 
-  // Don't render dashboard if not authenticated
   if (!isAuthenticated) {
     return null;
   }
@@ -233,7 +366,14 @@ export default function Dashboard() {
         <div className="fixed inset-0 z-40">
           <div className="absolute inset-0 bg-black/50" onClick={toggleSidebar} />
           <div className="w-64 h-full relative z-10">
-            <Sidebar onNewChat={handleNewChat} />
+            <Sidebar 
+              onNewChat={handleNewChat}
+              userSessions={userSessions}
+              currentSessionId={sessionId}
+              onSessionSelect={handleSessionSelect}
+              loadingSessions={loadingSessions}
+              loadingSession={loadingSession}
+            />
           </div>
         </div>
       )}
@@ -244,23 +384,23 @@ export default function Dashboard() {
         {/* Left Content Area - Chat Panel */}
         <div className="flex-1 flex flex-col justify-between p-6 overflow-hidden min-w-0 max-w-none">
                     
-          {/* Debug Info - Remove in production */}
-          <div className="text-xs text-gray-400 mb-2 flex-shrink-0">
-            Session ID: {sessionId || 'None'} | Loading: {isLoading ? 'Yes' : 'No'} | Auth: {isAuthenticated ? 'Yes' : 'No'} | Code: {currentCode ? 'Yes' : 'No'}
-          </div>
+          
+          {/* <div className="text-xs text-gray-400 mb-2 flex-shrink-0">
+            Session ID: {sessionId || 'None'} | Loading: {isLoading ? 'Yes' : 'No'} | Sessions: {userSessions.length} | Code: {currentCode ? 'Yes' : 'No'}
+          </div> */}
 
-          {/* ChatWindow (message view) - This will handle the overflow internally */}
+          {/* ChatWindow */}
           <div className="flex-1 overflow-hidden min-w-0">
             <ChatWindow 
               messages={messages} 
-              isLoading={isLoading}
+              isLoading={isLoading || loadingSession}
               onCodeUpdate={handleCodeUpdate}
             />
           </div>
 
-          {/* ChatBox (input) */}
+          {/* ChatBox */}
           <div className="h-24 p-2 flex-shrink-0">
-            <ChatBox onSendMessage={handleSendMessage} isLoading={isLoading} />
+            <ChatBox onSendMessage={handleSendMessage} isLoading={isLoading || loadingSession} />
           </div>
         </div>
 

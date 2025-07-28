@@ -1,7 +1,9 @@
 // src/services/authService.js
 import axios from 'axios';
+ // Load environment variables
 
-const API_BASE_URL = 'http://localhost:3000/api'; // Keep your existing base URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+console.log('API Base URL:', API_BASE_URL); // Keep your existing base URL
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true // Required for refresh token cookie
@@ -10,7 +12,7 @@ const api = axios.create({
 // Login function (new)
 export const login = async (email, password) => {
   try {
-    const response = await api.post('/auth/login', { email, password });
+    const response = await api.post('/api/auth/login', { email, password });
     return {
       accessToken: response.data.accessToken 
       // Only using what backend actually returns
@@ -26,7 +28,7 @@ export const login = async (email, password) => {
 // Signup function (your existing, slightly enhanced)
 export const signup = async (userData) => {
   try {
-    const response = await api.post('/auth/signup', userData);
+    const response = await api.post('/api/auth/signup', userData);
     return response.data;
   } catch (error) {
     if (error.response) {
@@ -42,7 +44,7 @@ export const signup = async (userData) => {
 // Refresh token function (new)
 export const refreshAccessToken = async () => {
   try {
-    const response = await api.get('/auth/refresh');
+    const response = await api.get('/api/auth/refresh');
     return response.data.accessToken;
   } catch (error) {
     throw { message: 'Session expired. Please login again.' };
