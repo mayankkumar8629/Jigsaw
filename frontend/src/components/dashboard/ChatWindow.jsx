@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { FiCopy } from 'react-icons/fi';
 
-export default function ChatWindow({ messages = [], isLoading = false }) {
+export default function ChatWindow({ messages = [], isLoading = false, onCodeUpdate }) {
   const containerRef = useRef(null);
 
   const copyToClipboard = (text) => {
@@ -21,6 +21,14 @@ export default function ChatWindow({ messages = [], isLoading = false }) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [messages, isLoading]);
+
+  // Function to send code to sandbox when message has code
+  const handleCodeForSandbox = (code) => {
+    if (onCodeUpdate && code) {
+      console.log('ChatWindow: Sending code to Dashboard for sandbox');
+      onCodeUpdate(code);
+    }
+  };
 
   // Loading indicator component
   const LoadingIndicator = () => (
@@ -106,6 +114,8 @@ export default function ChatWindow({ messages = [], isLoading = false }) {
                             <code>{msg.code}</code>
                           </pre>
                         </div>
+                        {/* SEND CODE TO SANDBOX - This is the key addition */}
+                        {handleCodeForSandbox(msg.code)}
                       </div>
                     )}
                   </div>

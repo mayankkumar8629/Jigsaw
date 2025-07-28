@@ -14,6 +14,8 @@ import { useNavigate } from 'react-router-dom';
 
 import ChatWindow from "../components/dashboard/ChatWindow.jsx";
 
+
+
 export default function Dashboard() {
   const { isAuthenticated, logout, isLoggingOut } = useAuth();
   const navigate = useNavigate();
@@ -22,12 +24,22 @@ export default function Dashboard() {
   const [messages, setMessages] = useState([]);
   const [sessionId, setSessionId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  // NEW: State to store current generated code for sandbox
+  const [currentCode, setCurrentCode] = useState(null);
 
   const handleNewChat = () => {
     setSessionId(null);
     setMessages([]);
     setIsLoading(false);
+    // Clear sandbox code when starting new chat
+    setCurrentCode(null);
     console.log('Started new chat - sessionId reset');
+  };
+
+  // NEW: Callback function to receive code from ChatWindow
+  const handleCodeUpdate = (code) => {
+    console.log('Received code for sandbox:', code);
+    setCurrentCode(code);
   };
 
   // Redirect to login if not authenticated
@@ -234,12 +246,16 @@ export default function Dashboard() {
                     
           {/* Debug Info - Remove in production */}
           <div className="text-xs text-gray-400 mb-2 flex-shrink-0">
-            Session ID: {sessionId || 'None'} | Loading: {isLoading ? 'Yes' : 'No'} | Auth: {isAuthenticated ? 'Yes' : 'No'}
+            Session ID: {sessionId || 'None'} | Loading: {isLoading ? 'Yes' : 'No'} | Auth: {isAuthenticated ? 'Yes' : 'No'} | Code: {currentCode ? 'Yes' : 'No'}
           </div>
 
           {/* ChatWindow (message view) - This will handle the overflow internally */}
           <div className="flex-1 overflow-hidden min-w-0">
-            <ChatWindow messages={messages} isLoading={isLoading} />
+            <ChatWindow 
+              messages={messages} 
+              isLoading={isLoading}
+              onCodeUpdate={handleCodeUpdate}
+            />
           </div>
 
           {/* ChatBox (input) */}
@@ -251,7 +267,7 @@ export default function Dashboard() {
         {/* Right Panel for Sandbox */}
         <div className="w-[35%] h-full p-2 pr-4 flex-shrink-0">
           <div className="h-[80%] w-full">
-            <Sandbox />
+            <Sandbox generatedCode={currentCode} />
           </div>
         </div>
       </div>

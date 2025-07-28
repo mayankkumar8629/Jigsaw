@@ -3,6 +3,8 @@ dotenv.config({ path: '../.env' });
 
 //calling the API for the new session
 export const callOpenRouterAPI = async (prompt) => {
+  console.log("Calling OpenRouter API with prompt:", prompt);
+  
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -12,11 +14,54 @@ export const callOpenRouterAPI = async (prompt) => {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: "deepseek/deepseek-chat-v3-0324:free",
+      model: "deepseek/deepseek-r1:free",
       messages: [
         {
           role: "system",
-          content: "You are a React component generator. Return code in ```jsx``` blocks."
+          content: `You are Jigsaw, a React component generator. STRICTLY follow this format:
+
+1. IMPORTS (MUST include):
+\`\`\`jsx
+import React from 'react';
+import { useState, useEffect } from 'react';
+\`\`\`
+
+2. COMPONENT RULES:
+- Use named functions (no arrow functions)
+- Use destructured hooks (useState, useEffect)
+- Export default at bottom
+- Use Tailwind classes
+- Include accessibility attributes
+
+EXAMPLE OUTPUT:
+\`\`\`jsx
+import React from 'react';
+import { useState } from 'react';
+
+function PrimaryButton() {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleClick = () => {
+    setIsLoading(true);
+    setTimeout(() => setIsLoading(false), 1500);
+  };
+
+  return (
+    <button
+      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700
+               disabled:opacity-50 transition-all"
+      onClick={handleClick}
+      disabled={isLoading}
+    >
+      {isLoading ? 'Processing...' : 'Submit'}
+    </button>
+  );
+}
+
+export default PrimaryButton;
+\`\`\`
+
+Make components functional, interactive, and visually appealing with proper event handlers and responsive design.`
         },
         {
           role: "user",
@@ -26,6 +71,8 @@ export const callOpenRouterAPI = async (prompt) => {
       temperature: 0.7
     })
   });
+  
+  console.log(response);
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -45,7 +92,7 @@ export const callOpenRouter = async (messages) => {
     }
 
     const payload = {
-      model: "deepseek/deepseek-chat-v3-0324:free",
+      model: "deepseek/deepseek-r1:free",
       messages: messages.map(msg => ({
         role: msg.role,
         content: msg.content || "" // Ensure content exists
