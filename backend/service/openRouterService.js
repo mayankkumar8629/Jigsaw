@@ -14,7 +14,7 @@ export const callOpenRouterAPI = async (prompt) => {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: "deepseek/deepseek-r1:free",
+      model: "openai/gpt-3.5-turbo",
       messages: [
         {
           role: "system",
@@ -86,21 +86,21 @@ Make components functional, interactive, and visually appealing with proper even
 ////calling the API for refining the component
 export const callOpenRouter = async (messages) => {
   try {
-    // Validate messages array
+   
     if (!Array.isArray(messages) || messages.length === 0) {
       throw new Error('Messages array must contain at least one message');
     }
 
     const payload = {
-      model: "deepseek/deepseek-r1:free",
+      model: "openai/gpt-3.5-turbo",
       messages: messages.map(msg => ({
         role: msg.role,
-        content: msg.content || "" // Ensure content exists
+        content: msg.content || "" 
       })),
       temperature: 0.7
     };
 
-    console.log("Sending payload:", JSON.stringify(payload, null, 2)); // Debug log
+    console.log("Sending payload:", JSON.stringify(payload, null, 2)); 
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",

@@ -158,7 +158,7 @@ export const logout = async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
 
   if (!refreshToken) {
-    return res.sendStatus(204); // No content (already logged out)
+    return res.sendStatus(204); 
   }
 
   try {
@@ -166,13 +166,12 @@ export const logout = async (req, res) => {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     await User.findByIdAndUpdate(decoded.userId, { refreshToken: null });
 
-    // (2) Clear HTTP-only cookie
-    // In development, match the same settings as login
+    
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: false, // Changed for development
+      secure: false, 
       sameSite: 'lax',
-      path: '/' // Changed for development
+      path: '/' 
     });
 
     res.sendStatus(204);

@@ -1,16 +1,16 @@
-// src/services/authService.js
+
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-// const API_BASE_URL = 'http://localhost:3003'; // Fallback for local development
-console.log('API Base URL:', API_BASE_URL);
+
+
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true // Required for refresh token cookie
+  withCredentials: true 
 });
 
-// Track refresh state to prevent multiple simultaneous refresh attempts
+
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -46,7 +46,7 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        // If already refreshing, queue this request
+        
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         }).then(token => {
@@ -125,7 +125,7 @@ export const signup = async (userData) => {
   }
 };
 
-// Refresh token function (for manual refresh if needed)
+// Refresh token function 
 export const refreshAccessToken = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/api/auth/refresh`, {
@@ -140,12 +140,12 @@ export const refreshAccessToken = async () => {
 // Logout function
 export const logout = async () => {
   try {
-    await api.post('/api/auth/logout'); // Fixed route path
+    await api.post('/api/auth/logout'); 
   } catch (error) {
     console.error('Logout error:', error);
-    // Still proceed even if logout API fails
+ 
   }
 };
 
-// Export the configured api instance for use in other parts of your app
+
 export { api };

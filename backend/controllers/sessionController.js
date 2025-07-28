@@ -19,12 +19,12 @@ export const createNewSession = async (req, res) => {
       });
     }
 
-    // Initialize session with EMPTY history (no initial entry)
+    
     const session = new Session({
       userId,
       title: generateTitle(prompt),
-      currentState: '', // Will update after API call
-      history: [], // Start empty
+      currentState: '', 
+      history: [], 
     });
 
     // Call API and process response
@@ -37,11 +37,11 @@ export const createNewSession = async (req, res) => {
     console.log("Code extracted:", cleanCode);
     console.log("Response from AI:", cleanRes);
 
-    // Update session with the FIRST history entry (no duplicates)
+  
     session.currentState = cleanCode;
     session.history.push({
       prompt,
-      response: cleanRes, // Ensure field names match schema
+      response: cleanRes, 
       code: cleanCode,
     });
 
@@ -95,7 +95,7 @@ export const refineComponent = async (req, res) => {
       });
     }
 
-    // 3. Prepare context messages - FIXED VERSION
+    
     const contextMessages = [
       {
         role: "system",
@@ -103,7 +103,7 @@ export const refineComponent = async (req, res) => {
       }
     ];
 
-    // Add history messages (ensuring no undefined/empty values)
+    // Add history messages 
     session.history.slice(-3).forEach(msg => {
       if (msg.prompt) {
         contextMessages.push({
@@ -127,13 +127,13 @@ export const refineComponent = async (req, res) => {
 
     console.log("Final messages:", JSON.stringify(contextMessages, null, 2));
 
-    // 4. Call AI
-    const rawResponse = await callOpenRouter(contextMessages); // Pass array directly
+    // Calling AI
+    const rawResponse = await callOpenRouter(contextMessages); 
     const cleanResponse = rawResponse.replace(/\n/g, '');
     const pureCode = extractCode(rawResponse);
     const cleanCode = pureCode.replace(/\n/g, '');
 
-    // 5. Update session
+    // Update session
     const updatedSession = await Session.findByIdAndUpdate(
       sessionId,
       {
@@ -151,7 +151,7 @@ export const refineComponent = async (req, res) => {
       { new: true }
     );
 
-    // 6. Respond
+    
     res.json({
       success: true,
       data: {
@@ -182,9 +182,9 @@ export const getAllSessions = async (req, res) => {
       });
     }
 
-    // Only select necessary fields for the sidebar (title, createdAt, _id)
+    
     const sessions = await Session.find({ userId })
-      .select('title createdAt _id')  // Only get what we need for the sidebar
+      .select('title createdAt _id')  
       .sort({ createdAt: -1 })
       .lean();
 
@@ -212,14 +212,14 @@ export const getSessionById = async (req, res) => {
     const { sessionId } = req.params;
     const userId = req.user.userId;
 
-    // Validate sessionId format (MongoDB ObjectId)
+    
     if (!sessionId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         message: "Invalid session ID format"
       });
     }
 
-    // Find the session and verify it belongs to the user
+    
     const session = await Session.findOne({ 
       _id: sessionId, 
       userId: userId 

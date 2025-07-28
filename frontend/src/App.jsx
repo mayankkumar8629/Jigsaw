@@ -28,7 +28,7 @@ function HomeWithAuthModal() {
   const [authMode, setAuthMode] = useState('login');
 
   return (
-    <div className="relative"> {/* Added container for proper z-index context */}
+    <div className="relative"> 
       <Navbar 
         onAuthButtonClick={(mode) => {
           setAuthMode(mode);
@@ -37,7 +37,7 @@ function HomeWithAuthModal() {
       />
       <Home />
       
-      {/* AuthModal now properly nested in DOM */}
+    
       {authModalOpen && (
         <AuthModal 
           mode={authMode}

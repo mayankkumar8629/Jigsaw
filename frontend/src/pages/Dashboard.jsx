@@ -26,14 +26,14 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentCode, setCurrentCode] = useState(null);
   
-  // NEW: Session history states
+  //  Session history states
   const [userSessions, setUserSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
   const [loadingSession, setLoadingSession] = useState(false);
 
   // API base URL configuration
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ; 
-  // const API_BASE_URL = 'http://localhost:3003';
+  
 
 
   const getAuthToken = () => {
@@ -50,7 +50,7 @@ export default function Dashboard() {
     throw new Error(`API Error: ${response.status}`);
   };
 
-  // NEW: Fetch all user sessions
+  // Fetch all user sessions
   const fetchUserSessions = async () => {
     const token = getAuthToken();
     if (!token) {
@@ -119,7 +119,7 @@ export default function Dashboard() {
     }
   };
 
-  // NEW: Transform MongoDB history to message format
+
   const transformHistoryToMessages = (history) => {
     const messages = [];
     

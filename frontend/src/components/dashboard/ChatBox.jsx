@@ -6,7 +6,7 @@ export default function ChatBox({ onSendMessage, isLoading = false }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (message.trim() && !isLoading) { // Prevent sending while loading
+    if (message.trim() && !isLoading) {
       onSendMessage(message);
       setMessage('');
       resetTextareaHeight();
@@ -28,7 +28,7 @@ export default function ChatBox({ onSendMessage, isLoading = false }) {
   };
 
   const handleKeyDown = (e) => {
-    // Submit on Enter (but not Shift+Enter)
+  
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
@@ -51,7 +51,7 @@ export default function ChatBox({ onSendMessage, isLoading = false }) {
             onChange={(e) => setMessage(e.target.value)}
             onInput={handleInput}
             onKeyDown={handleKeyDown}
-            disabled={isLoading} // Disable during loading
+            disabled={isLoading} 
             placeholder={isLoading ? "Jigsaw is generating..." : "Ask Jigsaw to generate code..."}
             className={`flex-1 border border-[#3a3a5a] rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-hidden transition-all ${
               isLoading 

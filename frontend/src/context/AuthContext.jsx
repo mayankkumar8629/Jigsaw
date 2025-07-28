@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Initialize token from localStorage if it exists
+ 
   const [accessToken, setAccessToken] = useState(() => {
     return localStorage.getItem('accessToken') || null;
   });
@@ -28,14 +28,14 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setAccessToken(null);
       localStorage.removeItem('accessToken');
-      // Clear all auth cookies
+      // Clearing all auth cookies
       document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       setIsLoggingOut(false);
     }
   };
 
-  // Listen for automatic logout events from the interceptor
+  
   useEffect(() => {
     const handleAutoLogout = () => {
       setAccessToken(null);
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener('auth:logout', handleAutoLogout);
   }, []);
 
-  // Update token state when localStorage changes (for multi-tab sync)
+
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === 'accessToken') {
@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }) => {
       isLoggingOut,
       login: handleLogin,
       logout: handleLogout,
-      accessToken // Expose token if needed elsewhere
+      accessToken
     }}>
       {children}
     </AuthContext.Provider>

@@ -23,7 +23,7 @@ export default function SignupForm({ switchToLogin }) {
       ...prev,
       [name]: value
     }));
-    // Clear error when user types
+    
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }

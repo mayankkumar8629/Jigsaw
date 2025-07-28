@@ -7,7 +7,7 @@ import {
 } from "@codesandbox/sandpack-react";
 
 const Sandbox = ({ generatedCode }) => {
-  const [viewMode, setViewMode] = useState("preview"); // 'editor' or 'preview'
+  const [viewMode, setViewMode] = useState("preview"); 
   const [key, setKey] = useState(0); // Force re-render of Sandpack
   const previousCodeRef = useRef(null);
 
@@ -27,9 +27,9 @@ const Sandbox = ({ generatedCode }) => {
 
   const code = generatedCode || defaultCode;
 
-  // Handle new code generation
+  
   useEffect(() => {
-    // Check if generatedCode has actually changed and is not null/undefined
+    
     if (generatedCode && generatedCode !== previousCodeRef.current) {
       previousCodeRef.current = generatedCode;
       
@@ -43,7 +43,7 @@ const Sandbox = ({ generatedCode }) => {
     }
   }, [generatedCode, viewMode]);
 
-  // Sandpack files with Tailwind CSS included
+  
   const files = {
     "/App.js": code,
     "/styles.css": `@tailwind base;

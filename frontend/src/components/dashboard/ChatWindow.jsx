@@ -8,21 +8,21 @@ export default function ChatWindow({ messages = [], isLoading = false, onCodeUpd
     navigator.clipboard.writeText(text)
       .then(() => {
         console.log('Copied to clipboard');
-        // TODO: Add visual feedback for successful copy
+        
       })
       .catch(err => {
         console.error('Failed to copy:', err);
       });
   };
 
-  // Auto-scroll to bottom when messages change or loading state changes
+  
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [messages, isLoading]);
 
-  // Function to send code to sandbox when message has code
+  
   const handleCodeForSandbox = (code) => {
     if (onCodeUpdate && code) {
       console.log('ChatWindow: Sending code to Dashboard for sandbox');
@@ -30,7 +30,7 @@ export default function ChatWindow({ messages = [], isLoading = false, onCodeUpd
     }
   };
 
-  // Loading indicator component
+  
   const LoadingIndicator = () => (
     <div className="flex justify-start pl-4">
       <div className="bg-gray-800 text-gray-200 rounded-xl rounded-tl-none px-4 py-3 max-w-[85%] min-w-0">

@@ -45,7 +45,7 @@ export default function LoginForm({ onClose, switchToSignup }) {
         className: 'left-toast'
       });
       console.log('Login successful');
-      onClose?.(); // Close modal if provided
+      onClose?.();
     } catch (error) {
       setApiError(error.message || 'Login failed');
     } finally {
