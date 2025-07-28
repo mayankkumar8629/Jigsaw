@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoute.js';
 import sessionRoutes from './routes/sessionRoute.js';
+import cookieParser from 'cookie-parser';
 
 dotenv.config(); // Load environment variables
 
@@ -14,12 +15,17 @@ const app=express();
 const PORT = 3003;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(cors({
   origin: 'https://jigsaw-mayank-kumars-projects-912dc5d1.vercel.app/', // Your frontend URL
   credentials: true // Required for cookies
 }));
+// app.use(cors({
+//   origin:'http://localhost:5173', // Your frontend URL
+//   credentials: true // Required for cookies
+// }))
 
-
+            
 
 app.use('/api/auth', authRoutes);
 app.use('/api/sessions', sessionRoutes);

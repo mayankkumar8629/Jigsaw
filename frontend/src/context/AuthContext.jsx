@@ -1,7 +1,8 @@
-import { createContext, useState, useEffect, useContext } from 'react';
-import { login,logout,refreshAccessToken } from '../services/authService.js';
-import { useNavigate } from 'react-router-dom';
 
+
+import { createContext, useState, useEffect, useContext } from 'react';
+import { login, logout } from '../services/authService.js';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
@@ -22,18 +23,40 @@ export const AuthProvider = ({ children }) => {
     setIsLoggingOut(true);
     try {
       await logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
       setAccessToken(null);
       localStorage.removeItem('accessToken');
       // Clear all auth cookies
       document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
       setIsLoggingOut(false);
     }
   };
+
+  // Listen for automatic logout events from the interceptor
+  useEffect(() => {
+    const handleAutoLogout = () => {
+      setAccessToken(null);
+      localStorage.removeItem('accessToken');
+    };
+
+    window.addEventListener('auth:logout', handleAutoLogout);
+    return () => window.removeEventListener('auth:logout', handleAutoLogout);
+  }, []);
+
+  // Update token state when localStorage changes (for multi-tab sync)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'accessToken') {
+        setAccessToken(e.newValue);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Check for existing token on app start
   useEffect(() => {
@@ -43,30 +66,13 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Token refresh logic
-  useEffect(() => {
-    if (!accessToken) return; // Don't refresh if not logged in
-
-    const refresh = async () => {
-      try {
-        const newToken = await refreshAccessToken();
-        setAccessToken(newToken);
-        localStorage.setItem('accessToken', newToken);
-      } catch {
-        handleLogout(); // Auto-logout if refresh fails
-      }
-    };
-
-    const interval = setInterval(refresh, 14 * 60 * 1000); // Refresh every 14 mins
-    return () => clearInterval(interval);
-  }, [accessToken]); // Add accessToken as dependency
-
   return (
-    <AuthContext.Provider value={{ 
+    <AuthContext.Provider value={{
       isAuthenticated: !!accessToken,
       isLoggingOut,
       login: handleLogin,
-      logout: handleLogout 
+      logout: handleLogout,
+      accessToken // Expose token if needed elsewhere
     }}>
       {children}
     </AuthContext.Provider>
