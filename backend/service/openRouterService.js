@@ -14,7 +14,7 @@ export const callOpenRouterAPI = async (prompt) => {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: "openai/gpt-4.1-mini",
+      model: "openai/gpt-3.5-turbo",
       messages: [
         {
           role: "system",
@@ -92,7 +92,7 @@ export const callOpenRouter = async (messages) => {
     }
 
     const payload = {
-      model: "openai/gpt-4.1-mini",
+      model: "openai/gpt-3.5-turbo",
       messages: messages.map(msg => ({
         role: msg.role,
         content: msg.content || "" 
