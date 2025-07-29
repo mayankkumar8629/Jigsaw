@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL ='https://jigsaw-s7qa.onrender.com' ;
 
 
 
@@ -140,12 +140,31 @@ export const refreshAccessToken = async () => {
 // Logout function
 export const logout = async () => {
   try {
-    await api.post('/api/auth/logout'); 
+    const response = await axios.post(
+      `${API_BASE_URL}/api/auth/logout`,
+      {}, // Empty body if not needed
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+        withCredentials: true,
+      }
+    );
+
+    // Clear frontend tokens regardless of response
+    localStorage.removeItem('accessToken');
+    window.dispatchEvent(new CustomEvent('auth:logout'));
+
+    return response.data;
   } catch (error) {
-    console.error('Logout error:', error);
- 
+    console.error("Logout failed:", error);
+    
+    // Still clear tokens on error
+    localStorage.removeItem('accessToken');
+    window.dispatchEvent(new CustomEvent('auth:logout'));
+
+    throw error; // Optional: Re-throw if caller needs to handle it
   }
 };
-
 
 export { api };

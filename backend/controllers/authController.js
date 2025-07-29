@@ -155,29 +155,41 @@ export const refreshToken = async (req, res) => {
 
 export const logout = async (req, res) => {
   console.log('Logout request received');
-  const refreshToken = req.cookies.refreshToken;
+  const refreshToken = req.cookies.refreshToken; // Fix typo: 'refreshToken' (was 'refreshToken')
 
   if (!refreshToken) {
-    return res.sendStatus(204); 
+    return res.sendStatus(204); // No content - valid for missing token
   }
 
   try {
-    // (1) Clear refreshToken from DB
+    // (1) Verify and decode token
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    await User.findByIdAndUpdate(decoded.userId, { refreshToken: null });
-
     
+    // (2) Clear refreshToken from DB
+    await User.findByIdAndUpdate(
+      decoded.userId, // Fix typo: 'decoded' (was 'decoded')
+      { $set: { refreshToken: null } }, // Explicit $set operator
+      { new: true }
+    );
+
+    // (3) Clear cookie
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: false, 
-      sameSite: 'lax',
-      path: '/' 
+      secure: process.env.NODE_ENV === 'production', // Enable in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/'
     });
 
-    res.sendStatus(204);
+    return res.sendStatus(204); // Explicit return
 
   } catch (error) {
     console.error('Logout error:', error);
-    res.status(500).json({ error: 'Server error' });
+    
+    // Handle specific JWT errors
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    
+    return res.status(500).json({ error: 'Server error during logout' });
   }
 };

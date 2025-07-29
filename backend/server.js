@@ -17,13 +17,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
-  origin: 'https://jigsaw-mayank-kumars-projects-912dc5d1.vercel.app', // Your frontend URL
+  origin: 'http://ec2-13-61-14-231.eu-north-1.compute.amazonaws.com:5174', // Your frontend URL
   credentials: true // Required for cookies
 }));
-// app.use(cors({
-//   origin:'http://localhost:5173', // Your frontend URL
-//   credentials: true // Required for cookies
-// }))
 
             
 

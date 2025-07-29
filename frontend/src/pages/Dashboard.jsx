@@ -32,7 +32,7 @@ export default function Dashboard() {
   const [loadingSession, setLoadingSession] = useState(false);
 
   // API base URL configuration
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ; 
+  const API_BASE_URL = 'https://jigsaw-s7qa.onrender.com'  ; 
   
 
 
