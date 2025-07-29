@@ -75,6 +75,7 @@ export default function ChatWindow({ messages = [], isLoading = false, onCodeUpd
               <p>Start by asking me to generate a React component!</p>
               <div className="mt-4 text-sm text-gray-500">
                 <p>Example: "Create a responsive navbar with dark mode toggle"</p>
+                <p>NOTE:"Start with basic components like button or table"</p>
               </div>
             </div>
           ) : (
