@@ -4,7 +4,7 @@ A live, stateful, AI-powered micro‑frontend platform where users can **generat
 
 ## 🌐 Live Demo
 
-👉 [Live App Link](https://jigsaw-mayank-kumars-projects-912dc5d1.vercel.app/)
+👉 [Live App Link](https://jigsaw-pi.vercel.app/)
 
 ---
 
