@@ -5,7 +5,9 @@ A live, stateful, AI-powered micro‑frontend platform where users can **generat
 ## 🌐 Live Demo
 
 👉 [Live App Link](https://jigsaw-pi.vercel.app/)
-
+    email-kumar10mayank14@gmail.com
+    pasword-Kumar10mayank14@
+    (USING THIS ACC FOR THE LAST FEW DAYS CONTAINS ALL THE CHAT HISTORY AND SESSIONS)
 ---
 
 ## ✨ Features
