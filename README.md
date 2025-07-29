@@ -80,7 +80,7 @@ A live, stateful, AI-powered micro‑frontend platform where users can **generat
 --------------------------------------------------
 
 ----------------------------------------
-
+### .env example
 
 .env Sample (Backend)
 MONGO_URI=mongodb://localhost:27017/ai-component
