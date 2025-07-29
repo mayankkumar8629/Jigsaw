@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
-  origin: 'https://jigsaw-pi.vercel.app/', // Your frontend URL
+  origin: 'https://jigsaw-pi.vercel.app', // Your frontend URL
   credentials: true // Required for cookies
 }));
 
