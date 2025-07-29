@@ -38,7 +38,7 @@ export default function SignupForm({ switchToLogin }) {
       newErrors.email = 'Please enter a valid email';
     }
     if (!formData.password) newErrors.password = 'Password is required';
-    else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
+    else if (formData.password.length < 8) newErrors.password = 'Password must contain uppercase character,special character and atleast of length 8';
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
