@@ -30,28 +30,39 @@ export default function LoginForm({ onClose, switchToSignup }) {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setApiError(null);
-    
-    if (!validateForm()) return;
-    
-    setIsLoading(true);
-    
-    try {
-      await login(email, password);
-      toast.success('Login successful!', {
-        position: "top-left",
-        autoClose: 3000,
-        className: 'left-toast'
-      });
-      console.log('Login successful');
-      onClose?.();
-    } catch (error) {
+  e.preventDefault();
+  setApiError(null);
+  
+  if (!validateForm()) return;
+  
+  setIsLoading(true);
+  
+  try {
+    await login(email, password);
+    toast.success('Login successful!', {
+      position: "top-left",
+      autoClose: 3000,
+      className: 'left-toast'
+    });
+    onClose?.();
+  } catch (error) {
+    // Handle different error cases
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      const errorMessage = error.response.data.error || 'Login failed';
+      setApiError(errorMessage);
+    } else if (error.request) {
+      // The request was made but no response was received
+      setApiError('Network error - please try again');
+    } else {
+      // Something happened in setting up the request that triggered an Error
       setApiError(error.message || 'Login failed');
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="w-full max-w-md bg-gray-900 p-10 rounded-2xl border border-gray-700 shadow-2xl backdrop-blur-sm bg-opacity-90">

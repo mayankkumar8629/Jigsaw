@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { signup } from '../../services/authService.js';
+import { signup ,login} from '../../services/authService.js';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+
 
 
 export default function SignupForm({ switchToLogin }) {
@@ -15,6 +17,13 @@ export default function SignupForm({ switchToLogin }) {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false
+  });
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -24,22 +33,63 @@ export default function SignupForm({ switchToLogin }) {
       [name]: value
     }));
     
+   
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+    
+    // Clear API error when user makes changes
+    if (apiError) {
+      setApiError(null);
+    }
+
+    // Real-time password validation
+    if (name === 'password') {
+      validatePasswordRequirements(value);
+    }
+  };
+
+  const validatePasswordRequirements = (password) => {
+    setPasswordRequirements({
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    });
   };
 
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
+    // Name validation
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = 'Name must be at least 2 characters long';
     }
-    if (!formData.password) newErrors.password = 'Password is required';
-    else if (formData.password.length < 8) newErrors.password = 'Password must contain uppercase character,special character and atleast of length 8';
-    if (formData.password !== formData.confirmPassword) {
+    
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else {
+      const { length, uppercase, lowercase, number, special } = passwordRequirements;
+      if (!length || !uppercase || !lowercase || !number || !special) {
+        newErrors.password = 'Password does not meet all requirements';
+      }
+    }
+    
+    // Confirm password validation
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     
@@ -47,53 +97,76 @@ export default function SignupForm({ switchToLogin }) {
     return Object.keys(newErrors).length === 0;
   };
 
-    const handleSubmit = async (e) => {
-  e.preventDefault();
-  setApiError(null);
-  
-  if (!validateForm()) return;
-  
-  setIsLoading(true);
-  
-  try {
-    const { confirmPassword, ...userData } = formData;
-    const response = await signup(userData);
-
-
-     toast.success('Account created successfully!', {
-      position: "top-left",
-      autoClose: 3000,
-      className: 'left-toast'
-    });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setApiError(null);
     
-    // Handle successful signup
-    console.log('Signup successful:', response);
-    navigate('/dashboard'); // Redirect to dashboard or confirmation page
+    if (!validateForm()) return;
     
-  } catch (error) {
-    console.error('Signup error:', error);
+    setIsLoading(true);
+    
+    try {
+      const { confirmPassword, ...userData } = formData;
+      
+      // Create account
+      const signupResponse = await signup(userData);
+      console.log('Signup successful:', signupResponse);
 
-    toast.error(error.message || 'Signup failed', {
-      position: "top-left", 
-      autoClose: 5000,
-      className: 'left-toast'
-    });
+      // Show success message
+      toast.success('Account created successfully! Please log in.', {
+        position: "top-right",
+        autoClose: 3000,
+        className: 'success-toast'
+      });
+
+      // Clear form data
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: ''
+      });
+
+      // Switch to login form after success
+      setTimeout(() => {
+        switchToLogin();
+      }, 2000);
+        
+    } catch (error) {
+      console.error('Signup error:', error);
+
     
-    // Handle different error cases
-    if (error.errors) {
-      // Backend validation errors
-      setErrors(error.errors);
-    } else if (error.message) {
-      // General error message
-      setApiError(error.message);
-    } else {
-      // Fallback error
-      setApiError('An unexpected error occurred. Please try again.');
+      let errorMessage = 'An unexpected error occurred. Please try again.';
+      
+      if (error.response?.data?.message) {
+      
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      // Show error toast
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
+        className: 'error-toast'
+      });
+      
+      
+      if (error.response?.data?.errors) {
+        setErrors(error.response.data.errors);
+      } else {
+        setApiError(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
     }
-  } finally {
-    setIsLoading(false);
-  }
   };
+
+  const getRequirementColor = (met) => met ? 'text-green-400' : 'text-red-400';
+  const getRequirementIcon = (met) => met ? '✓' : '✗';
 
   return (
     <div className="w-full max-w-md bg-gray-900 p-10 rounded-2xl border border-gray-700 shadow-2xl backdrop-blur-sm bg-opacity-90">
@@ -108,7 +181,12 @@ export default function SignupForm({ switchToLogin }) {
       {/* API Error Message */}
       {apiError && (
         <div className="mb-4 p-3 bg-red-900/50 border border-red-700 text-red-300 rounded-lg text-sm">
-          {apiError}
+          <div className="flex items-center">
+            <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            {apiError}
+          </div>
         </div>
       )}
 
@@ -126,7 +204,11 @@ export default function SignupForm({ switchToLogin }) {
             placeholder="Enter your full name"
             className={`w-full px-4 py-3 bg-gray-800 border ${errors.name ? 'border-red-500' : 'border-gray-700'} rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
           />
-          {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+          {errors.name && (
+            <p className="text-red-500 text-xs mt-1 flex items-center">
+              <span className="mr-1">⚠</span> {errors.name}
+            </p>
+          )}
         </div>
 
         {/* Email Field */}
@@ -141,7 +223,11 @@ export default function SignupForm({ switchToLogin }) {
             placeholder="Enter your email"
             className={`w-full px-4 py-3 bg-gray-800 border ${errors.email ? 'border-red-500' : 'border-gray-700'} rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
           />
-          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+          {errors.email && (
+            <p className="text-red-500 text-xs mt-1 flex items-center">
+              <span className="mr-1">⚠</span> {errors.email}
+            </p>
+          )}
         </div>
 
         {/* Password Field */}
@@ -156,7 +242,41 @@ export default function SignupForm({ switchToLogin }) {
             placeholder="Create a password"
             className={`w-full px-4 py-3 bg-gray-800 border ${errors.password ? 'border-red-500' : 'border-gray-700'} rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
           />
-          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+          
+          {/* Password Requirements */}
+          {formData.password && (
+            <div className="mt-2 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+              <p className="text-xs text-gray-400 mb-2">Password Requirements:</p>
+              <div className="space-y-1 text-xs">
+                <div className={`flex items-center ${getRequirementColor(passwordRequirements.length)}`}>
+                  <span className="mr-2">{getRequirementIcon(passwordRequirements.length)}</span>
+                  At least 8 characters long
+                </div>
+                <div className={`flex items-center ${getRequirementColor(passwordRequirements.uppercase)}`}>
+                  <span className="mr-2">{getRequirementIcon(passwordRequirements.uppercase)}</span>
+                  Contains uppercase letter (A-Z)
+                </div>
+                <div className={`flex items-center ${getRequirementColor(passwordRequirements.lowercase)}`}>
+                  <span className="mr-2">{getRequirementIcon(passwordRequirements.lowercase)}</span>
+                  Contains lowercase letter (a-z)
+                </div>
+                <div className={`flex items-center ${getRequirementColor(passwordRequirements.number)}`}>
+                  <span className="mr-2">{getRequirementIcon(passwordRequirements.number)}</span>
+                  Contains number (0-9)
+                </div>
+                <div className={`flex items-center ${getRequirementColor(passwordRequirements.special)}`}>
+                  <span className="mr-2">{getRequirementIcon(passwordRequirements.special)}</span>
+                  Contains special character (!@#$%^&*)
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {errors.password && (
+            <p className="text-red-500 text-xs mt-1 flex items-center">
+              <span className="mr-1">⚠</span> {errors.password}
+            </p>
+          )}
         </div>
 
         {/* Confirm Password Field */}
@@ -171,7 +291,16 @@ export default function SignupForm({ switchToLogin }) {
             placeholder="Confirm your password"
             className={`w-full px-4 py-3 bg-gray-800 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-700'} rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
           />
-          {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+          {errors.confirmPassword && (
+            <p className="text-red-500 text-xs mt-1 flex items-center">
+              <span className="mr-1">⚠</span> {errors.confirmPassword}
+            </p>
+          )}
+          {formData.confirmPassword && formData.password === formData.confirmPassword && !errors.confirmPassword && (
+            <p className="text-green-400 text-xs mt-1 flex items-center">
+              <span className="mr-1">✓</span> Passwords match
+            </p>
+          )}
         </div>
 
         {/* Submit Button */}
@@ -214,18 +343,19 @@ export default function SignupForm({ switchToLogin }) {
         </p>
       </div>
   
-       <ToastContainer 
-      position="top-right"
-      autoClose={5000}
-      hideProgressBar={false}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-      theme="dark"
-    />
+      <ToastContainer 
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        className="custom-toast-container"
+      />
     </div>
   );
 }
